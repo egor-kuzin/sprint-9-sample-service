@@ -30,11 +30,6 @@ class StgRepository:
                             %(sent_dttm)s, 
                             %(payload)s
                         )
-                        ON CONFLICT (object_id) DO UPDATE SET 
-                            object_id = EXCLUDED.object_id, 
-                            object_type = EXCLUDED.object_type, 
-                            sent_dttm = EXCLUDED.sent_dttm, 
-                            payload = EXCLUDED.payload;
                     """,
                     {
                         'object_id': object_id,

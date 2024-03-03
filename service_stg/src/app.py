@@ -26,15 +26,16 @@ if __name__ == '__main__':
     # Инициализируем конфиг. Для удобства, вынесли логику получения значений переменных окружения в отдельный класс.
     config = AppConfig()
     
-    stg_repo = StgRepository(config.pg_warehouse_db)
+    stg_repo = StgRepository(config.pg_warehouse_db())
 
     # Инициализируем процессор сообщений.
     # Пока он пустой. Нужен для того, чтобы потом в нем писать логику обработки сообщений из Kafka.
     proc = StgMessageProcessor(
-        config.kafka_consumer,
-        config.kafka_producer,
-        config.redis_client,
+        config.kafka_consumer(),
+        config.kafka_producer(),
+        config.redis_client(),
         stg_repo,
+        100,
         app.logger
     )
 
