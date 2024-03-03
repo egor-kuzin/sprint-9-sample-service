@@ -52,7 +52,7 @@ class StgMessageProcessor:
             if payload is not None:
                 payload = json.dumps(payload)
             
-        return object_id, object_type, sent_dttm, payload
+            return object_id, object_type, sent_dttm, payload
     
     
     def insert_into_db(
@@ -138,6 +138,8 @@ class StgMessageProcessor:
         m_payload['cost'] = payload.get('cost')
         m_payload['payment'] = payload.get('payment')
         m_payload['status'] = payload.get('final_status')
+        m_payload['restaurant'] = m_restaurant
+        m_payload['user'] = m_user
         m_payload['products'] = m_products
         
         message['object_id'] = object_id
@@ -155,19 +157,22 @@ class StgMessageProcessor:
         for i in range(self._batch_size):
             # Get message from Kafka
             message = self._consumer.consume()
+            if message is None:
+                self._logger.warning(f"{datetime.utcnow()}: Message is None.")
+                break
             self._logger.info(f"{datetime.utcnow()}: Message received.")
             
             # Parse fields from message
-            object_id, object_type, sent_dttm, payload = self.get_fields(message=message)
+            object_id, object_type, sent_dttm, payload = self.get_fields(message)
             
             # Insert fields into DB if object_id is not None
             self.insert_into_db(object_id, object_type, sent_dttm, payload)
             
             # Get user data from Redis
-            user_data = self.get_user_data(payload=payload)
+            user_data = self.get_user_data(payload)
             
             # Get restaurant data from Redis
-            restaurant_data = self.get_restaurant_data(payload=payload)
+            restaurant_data = self.get_restaurant_data(payload)
             
             # Construct message for Kafka
             message_out = self.constract_message(
